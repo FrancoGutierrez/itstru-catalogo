@@ -1,0 +1,106 @@
+import { Category, CompanySettings, Product } from '@/types';
+
+export const INITIAL_COMPANY_SETTINGS: CompanySettings = {
+  id: 'main',
+  company_name: 'its tru',
+  company_ruc: '20609876543',
+  company_phone: '+51 952 496 756',
+  company_email: 'CAMBIARE NO OLVIDARTE',
+  company_address: 'Av. Garcilaso de la Vega 1348 (Compuplaza), Lima - Perú',
+  whatsapp_number: '+51 952 496 756',
+  quote_prefix: 'TRU',
+  quote_validity_days: 15,
+  logo_url: '/images/itstru-logo.jpg',
+  bank_accounts: `Yape / Plin: +51 952 496 756`,
+  terms_conditions: `1. Precios expresados en Nuevos Soles (S/.) con o sin I.G.V. según requerimiento.
+2. Garantía de hardware: 12 a 36 meses directo por fabricante según marca (ASUS, GamePro, its tru).
+3. Tiempo de entrega: Entrega inmediata en tienda / Envío mismo día en Lima Metropolitana / 24-48 hrs a provincias vía Shalom o Marvisur.
+4. Emisión de Factura y Boleta de Venta electrónica autorizada por SUNAT.`,
+};
+
+export const INITIAL_CATEGORIES: Category[] = [
+  {
+    id: '66666666-6666-6666-6666-666666666666',
+    name: 'Sillas Gamer',
+    slug: 'sillas-gamer',
+    description: 'Sillas ergonómicas gamer, escritorios y mesas con iluminación RGB',
+    icon: 'Armchair',
+  },
+  {
+    id: '33333333-3333-3333-3333-333333333333',
+    name: 'Componentes & Hardware',
+    slug: 'componentes-hardware',
+    description: 'Tarjetas de video, refrigeración y hardware gamer de alto rendimiento',
+    icon: 'Cpu',
+  },
+  {
+    id: '44444444-4444-4444-4444-444444444444',
+    name: 'Accesorios & Periféricos',
+    slug: 'accesorios-perifericos',
+    description: 'Bases refrigerantes RGB, soportes de aluminio y accesorios gaming',
+    icon: 'Monitor',
+  },
+];
+
+export const INITIAL_PRODUCTS: Product[] = [
+  {
+    id: 'prod-silla-gp1001',
+    sku: 'SIL-GPR-1001',
+    name: 'Silla Gaming GamePro GP1001 Ergonómica con Reposapiés Reclinable 135°',
+    description: 'Diseño ergonómico para máxima comodidad, reclinación hasta 135°, cojines lumbar y cervical incluidos, base metálica ultra resistente, soporta hasta 160 KG. Garantía de 1 año y 100% original its tru.',
+    price: 389.00,
+    category: 'Sillas Gamer',
+    category_id: '66666666-6666-6666-6666-666666666666',
+    stock: 7,
+    image_url: '/images/products/silla-gaming-gp1001.jpg',
+    is_active: true,
+    is_featured: true,
+    is_offer: true,
+    is_new: true,
+  },
+  {
+    id: 'prod-mesa-gp001',
+    sku: 'MES-GPR-001',
+    name: 'Mesa Gaming Game Pro GP-001 RGB con Control Remoto y Fibra de Carbono 120x60cm',
+    description: 'Iluminación RGB con control remoto, amplio tablero de 120 × 60 cm con acabado tipo fibra de carbono, estructura de acero de alta resistencia que soporta hasta 100 KG, incluye portavasos y gancho para audífonos, diseño de patas en Z para mayor estabilidad.',
+    price: 269.00,
+    category: 'Sillas Gamer',
+    category_id: '66666666-6666-6666-6666-666666666666',
+    stock: 12,
+    image_url: '/images/products/mesa-gaming-gp001-rgb.jpg',
+    is_active: true,
+    is_featured: true,
+    is_offer: true,
+    is_new: true,
+  },
+  {
+    id: 'prod-base-laptop-rgb',
+    sku: 'ACC-LPT-RGB360',
+    name: 'Base Refrigerante para Laptop Gamer de Aluminio con Ventilador RGB y Rotación 360°',
+    description: 'Soporte ergonómico plegable fabricado en aleación de aluminio con ventilador central de alta disipación y luz RGB multicolor. Base giratoria 360°, doble brazo articulado con ajuste milimétrico de altura e inclinación, puertos USB y topes antideslizantes de silicona.',
+    price: 119.00,
+    category: 'Accesorios & Periféricos',
+    category_id: '44444444-4444-4444-4444-444444444444',
+    stock: 24,
+    image_url: '/images/products/base-laptop-gamer-rgb.png',
+    is_active: true,
+    is_featured: true,
+    is_offer: false,
+    is_new: true,
+  },
+  {
+    id: 'prod-asus-rog-4060ti',
+    sku: 'GPU-ASU-4060TI',
+    name: 'Tarjeta de Video ASUS ROG Strix GeForce RTX 4060 Ti OC Edition 8GB GDDR6',
+    description: 'Modelo ROG-STRIX-RTX4060TI-O8G-GAMING con triple ventilador Axial-tech, memoria 8GB GDDR6 128-bit, iluminación Aura Sync ARGB, arquitectura Ada Lovelace con DLSS 3 y Ray Tracing de 3ra generación. Placa trasera ventilada de metal y BIOS dual.',
+    price: 2499.00,
+    category: 'Componentes & Hardware',
+    category_id: '33333333-3333-3333-3333-333333333333',
+    stock: 6,
+    image_url: '/images/products/asus-rog-strix-rtx4060ti.png',
+    is_active: true,
+    is_featured: true,
+    is_offer: true,
+    is_new: true,
+  },
+];
