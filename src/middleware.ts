@@ -8,7 +8,10 @@ export async function middleware(request: NextRequest) {
     },
   });
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || 'https://pdfkxzabspzkgbqwfcic.supabase.co';
+  const rawUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || 'https://pdfkxzabspzkgbqwfcic.supabase.co';
+  const supabaseUrl = rawUrl.includes('pdfkssz') || rawUrl.includes('bqefcic')
+    ? 'https://pdfkxzabspzkgbqwfcic.supabase.co'
+    : rawUrl;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_21OY2olbACqDAhcQtuMCiw_FTQcfXKD';
 
   const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
