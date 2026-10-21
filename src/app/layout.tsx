@@ -1,9 +1,16 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { ProformaProvider } from '@/context/ProformaContext';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { WhatsAppButton } from '@/components/common/WhatsAppButton';
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1.0,
+  maximumScale: 1.0,
+  userScalable: false,
+};
 
 export const metadata: Metadata = {
   title: 'its tru | Hardware Gamer',
@@ -30,14 +37,16 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es" className="h-full antialiased scroll-smooth">
-      <body className="min-h-full flex flex-col bg-[#0b071a] text-slate-100 selection:bg-purple-600 selection:text-white">
+      <body className="min-h-full flex flex-col bg-[#0b071a] text-slate-100 selection:bg-purple-600 selection:text-white max-w-[100vw] overflow-x-hidden">
         <ProformaProvider>
-          <Navbar />
-          <main className="flex-1">
-            {children}
-          </main>
-          <Footer />
-          <WhatsAppButton />
+          <div className="w-full max-w-[100vw] overflow-x-hidden flex flex-col min-h-screen">
+            <Navbar />
+            <main className="flex-1 w-full max-w-[100vw] overflow-x-hidden">
+              {children}
+            </main>
+            <Footer />
+            <WhatsAppButton />
+          </div>
         </ProformaProvider>
       </body>
     </html>
