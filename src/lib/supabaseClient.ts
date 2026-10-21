@@ -1,7 +1,7 @@
 import { createBrowserClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://pdfksszabspzkgbqefcic.supabase.co';
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://pdfkxzabspzkgbqwfcic.supabase.co';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_21OY2olbACqDAhcQtuMCiw_FTQcfXKD';
 
 export const isSupabaseConfigured = (): boolean => {

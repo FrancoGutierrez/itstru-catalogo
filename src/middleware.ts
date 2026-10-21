@@ -8,7 +8,7 @@ export async function middleware(request: NextRequest) {
     },
   });
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://pdfksszabspzkgbqefcic.supabase.co';
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://pdfkxzabspzkgbqwfcic.supabase.co';
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_21OY2olbACqDAhcQtuMCiw_FTQcfXKD';
 
   const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {

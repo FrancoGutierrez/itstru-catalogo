@@ -16,7 +16,11 @@ export async function getProducts(options?: { onlyActive?: boolean }): Promise<P
   }
 
   try {
-    let query = supabase.from('products').select('*').order('created_at', { ascending: false });
+    let query = supabase
+      .from('products')
+      .select('*, categories(id, name, slug)')
+      .order('created_at', { ascending: false });
+
     if (options?.onlyActive) {
       query = query.eq('is_active', true);
     }
@@ -27,7 +31,23 @@ export async function getProducts(options?: { onlyActive?: boolean }): Promise<P
       }
       return options?.onlyActive ? INITIAL_PRODUCTS.filter((p) => p.is_active) : INITIAL_PRODUCTS;
     }
-    return data as Product[];
+
+    return (data as any[]).map((item) => ({
+      id: item.id,
+      sku: item.sku || `TRU-${item.id.slice(0, 6).toUpperCase()}`,
+      name: item.name,
+      description: item.description || '',
+      price: Number(item.price) || 0,
+      category: item.categories?.name || 'General',
+      category_id: item.category_id,
+      stock: 10,
+      image_url: item.image_url || null,
+      is_active: item.is_active ?? true,
+      is_featured: item.is_featured ?? false,
+      is_offer: false,
+      is_new: false,
+      created_at: item.created_at,
+    })) as Product[];
   } catch (err) {
     console.warn('Error fetching products from Supabase, usando catálogo local:', err);
     return INITIAL_PRODUCTS;

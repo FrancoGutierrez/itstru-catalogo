@@ -103,17 +103,13 @@ export function ProductForm({
       // Si no se especificó SKU, generar uno automáticamente
       const finalSku = sku.trim().toUpperCase() || `TRU-${Date.now().toString().slice(-6)}`;
 
-      const productPayload = {
+      const productPayload: Record<string, any> = {
         sku: finalSku,
         name: name.trim(),
         description: description.trim() || null,
         price: numPrice,
-        category,
         category_id: categoryId,
-        stock: numStock,
         image_url: finalImageUrl || null,
-        is_offer: isOffer,
-        is_new: isNew,
         is_featured: isFeatured,
         is_active: isActive,
       };
