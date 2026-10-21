@@ -56,11 +56,6 @@ export function Footer() {
                   Armador de Proforma
                 </Link>
               </li>
-              <li>
-                <Link href="/admin" className="hover:text-purple-300 transition-colors">
-                  Acceso Administrador
-                </Link>
-              </li>
             </ul>
           </div>
 

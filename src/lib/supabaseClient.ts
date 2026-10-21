@@ -1,7 +1,8 @@
+import { createBrowserClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://pdfksszabspzkgbqefcic.supabase.co';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_21OY2olbACqDAhcQtuMCiw_FTQcfXKD';
 
 export const isSupabaseConfigured = (): boolean => {
   return Boolean(
@@ -11,24 +12,16 @@ export const isSupabaseConfigured = (): boolean => {
   );
 };
 
-// Cliente oficial de Supabase para operaciones del lado del cliente / navegador
-export const supabase = createClient(
-  supabaseUrl || 'https://pdfksszabspzkgbqefcic.supabase.co',
-  supabaseAnonKey || 'sb_publishable_21OY2olbACqDAhcQtuMCiw_FTQcfXKD',
-  {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true,
-    },
-  }
-);
+// Cliente oficial de Supabase con sincronización de cookies para Middleware de Next.js
+export const supabase = typeof window !== 'undefined'
+  ? createBrowserClient(supabaseUrl, supabaseAnonKey)
+  : createClient(supabaseUrl, supabaseAnonKey);
 
 // Cliente con service role para tareas privilegiadas del servidor (si se requiere)
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 export const supabaseAdmin = supabaseServiceKey
   ? createClient(
-      supabaseUrl || 'https://pdfksszabspzkgbqefcic.supabase.co',
+      supabaseUrl,
       supabaseServiceKey,
       {
         auth: {

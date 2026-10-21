@@ -10,7 +10,6 @@ import {
   FileText,
   Package,
   Home,
-  ShieldCheck,
   Menu,
   X,
   Sparkles,
@@ -111,15 +110,6 @@ export function Navbar() {
                 </div>
               </div>
             </Link>
-
-            {/* Botón Admin */}
-            <Link
-              href="/admin"
-              className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider text-purple-300/80 bg-purple-950/30 hover:bg-purple-900/50 hover:text-white border border-purple-900/40 transition-colors"
-            >
-              <ShieldCheck className="w-4 h-4 text-purple-400" />
-              Admin
-            </Link>
           </div>
 
           {/* Mobile menu button */}
@@ -184,15 +174,6 @@ export function Navbar() {
                 Ver Proforma
               </Link>
             </div>
-
-            <Link
-              href="/admin"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-purple-300 bg-purple-950/30 hover:bg-purple-900/50 border border-purple-900/50"
-            >
-              <ShieldCheck className="w-4 h-4 text-purple-400" />
-              Panel de Administración
-            </Link>
           </div>
         </div>
       )}

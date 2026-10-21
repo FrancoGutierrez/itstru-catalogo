@@ -19,7 +19,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 
-export default function AdminPage() {
+export default function PrivateAdminPage() {
   const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
@@ -31,21 +31,16 @@ export default function AdminPage() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Verificación estricta de autenticación mediante Supabase Auth
+  // Verificación estricta de sesión activa en Supabase Auth
   useEffect(() => {
     let isMounted = true;
-
-    // Limpiar residuos de sesiones demo anteriores
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('cotiperu_admin_session');
-    }
 
     async function checkAuth() {
       try {
         if (!supabase) {
           if (isMounted) {
             setIsAuthenticated(false);
-            router.replace('/admin/login');
+            router.replace('/');
           }
           return;
         }
@@ -54,7 +49,7 @@ export default function AdminPage() {
         if (error || !session) {
           if (isMounted) {
             setIsAuthenticated(false);
-            router.replace('/admin/login');
+            router.replace('/');
           }
           return;
         }
@@ -68,21 +63,21 @@ export default function AdminPage() {
         console.warn('Error verificando sesión en Supabase Auth:', err);
         if (isMounted) {
           setIsAuthenticated(false);
-          router.replace('/admin/login');
+          router.replace('/');
         }
       }
     }
 
     checkAuth();
 
-    // Escuchar cambios de estado en Supabase Auth en tiempo real
+    // Escuchar cambios de autenticación
     const { data: authListener } = supabase?.auth.onAuthStateChange((_event, session) => {
       if (session && isMounted) {
         setIsAuthenticated(true);
         setUserEmail(session.user.email || 'Admin');
       } else if (!session && isMounted) {
         setIsAuthenticated(false);
-        router.replace('/admin/login');
+        router.replace('/');
       }
     }) ?? { data: { subscription: { unsubscribe: () => {} } } };
 
@@ -118,11 +113,8 @@ export default function AdminPage() {
     } catch (e) {
       console.warn('Error al cerrar sesión:', e);
     }
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('cotiperu_admin_session');
-    }
     setIsAuthenticated(false);
-    router.replace('/admin/login');
+    router.replace('/');
   };
 
   if (isAuthenticated === null || loading) {
@@ -130,7 +122,7 @@ export default function AdminPage() {
       <div className="min-h-[70vh] flex flex-col items-center justify-center space-y-3">
         <div className="w-10 h-10 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
         <p className="text-xs font-bold text-purple-300 uppercase tracking-wider">
-          Verificando credenciales y cargando datos...
+          Verificando sesión privada...
         </p>
       </div>
     );
@@ -145,17 +137,17 @@ export default function AdminPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-      {/* Barra Superior de Admin con datos de usuario y logout */}
+      {/* Barra Superior del Panel Privado */}
       <div className="bg-gradient-to-br from-[#160d33] via-[#0f0824] to-[#0a0518] text-white rounded-3xl p-6 sm:p-8 border border-purple-800/80 shadow-2xl shadow-purple-950/50 flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="space-y-1">
           <div className="flex flex-wrap items-center gap-2">
             <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
               <ShieldCheck className="w-3 h-3" />
-              Sesión Auth Activa
+              Acceso Seguro Restringido
             </span>
             <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${hasSupabase ? 'bg-indigo-950 text-indigo-300 border-indigo-800' : 'bg-purple-950/60 text-purple-300 border-purple-800/60'}`}>
               <Database className="w-3 h-3 inline mr-1 text-purple-400" />
-              {hasSupabase ? 'Supabase PostgreSQL' : 'Catálogo Local'}
+              {hasSupabase ? 'Supabase PostgreSQL' : 'Local'}
             </span>
             {userEmail && (
               <span className="text-[10px] text-purple-300/80 bg-purple-950/60 border border-purple-800/50 px-2 py-0.5 rounded flex items-center gap-1 font-mono">
@@ -166,10 +158,10 @@ export default function AdminPage() {
           </div>
 
           <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-            Panel de Administración its tru
+            Panel de Control Privado its tru
           </h1>
           <p className="text-xs text-purple-300/60">
-            Administra el catálogo de hardware gamer, subida de productos con Supabase Storage y cotizaciones
+            Gestión interna de inventario, precios en Soles y almacenamiento en Supabase Storage
           </p>
         </div>
 
@@ -210,7 +202,7 @@ export default function AdminPage() {
             Total Productos
           </span>
           <div className="text-2xl font-black text-white mt-1">{totalProducts}</div>
-          <span className="text-[11px] text-purple-300/40 mt-0.5 block">En la base de datos Supabase</span>
+          <span className="text-[11px] text-purple-300/40 mt-0.5 block">En la base de datos</span>
         </div>
 
         <div className="bg-[#130b29]/95 p-5 rounded-2xl border border-purple-900/60 shadow-lg shadow-purple-950/40">
@@ -218,7 +210,7 @@ export default function AdminPage() {
             Productos Activos
           </span>
           <div className="text-2xl font-black text-emerald-400 mt-1">{activeProducts}</div>
-          <span className="text-[11px] text-purple-300/40 mt-0.5 block">Disponibles en el catálogo público</span>
+          <span className="text-[11px] text-purple-300/40 mt-0.5 block">Visibles en la tienda</span>
         </div>
 
         <div className="bg-[#130b29]/95 p-5 rounded-2xl border border-purple-900/60 shadow-lg shadow-purple-950/40">
@@ -226,7 +218,7 @@ export default function AdminPage() {
             Productos Pausados
           </span>
           <div className="text-2xl font-black text-purple-300/60 mt-1">{pausedProducts}</div>
-          <span className="text-[11px] text-purple-300/40 mt-0.5 block">Ocultos para clientes</span>
+          <span className="text-[11px] text-purple-300/40 mt-0.5 block">Ocultos</span>
         </div>
 
         <div className="bg-[#130b29]/95 p-5 rounded-2xl border border-purple-900/60 shadow-lg shadow-purple-950/40">
@@ -234,7 +226,7 @@ export default function AdminPage() {
             Stock Bajo (&le; 5)
           </span>
           <div className="text-2xl font-black text-fuchsia-400 mt-1">{lowStockCount}</div>
-          <span className="text-[11px] text-purple-300/40 mt-0.5 block">Requieren reposición</span>
+          <span className="text-[11px] text-purple-300/40 mt-0.5 block">Reposición urgente</span>
         </div>
       </div>
 
