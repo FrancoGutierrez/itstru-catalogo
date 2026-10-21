@@ -3,6 +3,7 @@ import './globals.css';
 import { ProformaProvider } from '@/context/ProformaContext';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
+import { WhatsAppButton } from '@/components/common/WhatsAppButton';
 
 export const metadata: Metadata = {
   title: 'its tru | Hardware Gamer',
@@ -36,6 +37,7 @@ export default function RootLayout({
             {children}
           </main>
           <Footer />
+          <WhatsAppButton />
         </ProformaProvider>
       </body>
     </html>
