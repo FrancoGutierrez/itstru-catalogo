@@ -25,6 +25,12 @@ export default function AdminLoginPage() {
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('cotiperu_admin_session');
+    }
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -41,24 +47,17 @@ export default function AdminLoginPage() {
 
     try {
       if (mode === 'login') {
-        // 1. Iniciar sesión mediante Supabase Auth
+        // 1. Iniciar sesión obligatoria mediante Supabase Auth
         const { data, error } = await supabase.auth.signInWithPassword({
           email: cleanEmail,
           password,
         });
 
         if (error) {
-          // Fallback a clave maestra demo si las credenciales de Supabase no están creadas
-          if (password === 'admin123' || password === process.env.NEXT_PUBLIC_ADMIN_PIN) {
-            localStorage.setItem('cotiperu_admin_session', 'demo_master_token');
-            router.push('/admin');
-            return;
-          }
           throw error;
         }
 
         if (data.session) {
-          localStorage.setItem('cotiperu_admin_session', data.session.access_token);
           router.push('/admin');
           return;
         }
@@ -75,14 +74,13 @@ export default function AdminLoginPage() {
         if (error) throw error;
 
         if (data.session) {
-          localStorage.setItem('cotiperu_admin_session', data.session.access_token);
           setSuccessMessage('¡Cuenta creada e inicio de sesión exitoso! Redirigiendo...');
           setTimeout(() => {
             router.push('/admin');
-          }, 1000);
+          }, 800);
           return;
         } else if (data.user) {
-          setSuccessMessage('Usuario registrado con éxito en Supabase Auth. Ya puedes iniciar sesión con tu contraseña.');
+          setSuccessMessage('Usuario registrado en Supabase Auth. Ya puedes iniciar sesión con tu correo y contraseña.');
           setMode('login');
         }
       }
@@ -90,11 +88,11 @@ export default function AdminLoginPage() {
       const msg = err instanceof Error ? err.message : 'Error de autenticación';
       // Traducción amigable de errores comunes de Supabase
       if (msg.includes('Invalid login credentials')) {
-        setErrorMessage('Credenciales incorrectas. Verifica tu correo y contraseña, o regístrate.');
+        setErrorMessage('Credenciales incorrectas. Verifica tu correo y contraseña, o regístrate en la pestaña "Registrar Admin".');
       } else if (msg.includes('Email not confirmed')) {
-        setErrorMessage('El correo no ha sido confirmado en Supabase. Si confirmación de correo está activada, revisa tu bandeja.');
+        setErrorMessage('El correo no ha sido confirmado en Supabase. Si confirmación de correo está activada en tu proyecto, revisa tu bandeja.');
       } else if (msg.includes('User already registered')) {
-        setErrorMessage('Este correo ya está registrado en Supabase. Por favor inicia sesión.');
+        setErrorMessage('Este correo ya está registrado en Supabase. Por favor inicia sesión con tu contraseña.');
         setMode('login');
       } else {
         setErrorMessage(msg);
@@ -102,11 +100,6 @@ export default function AdminLoginPage() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleDemoAccess = () => {
-    localStorage.setItem('cotiperu_admin_session', 'demo_master_token');
-    router.push('/admin');
   };
 
   return (
@@ -226,14 +219,6 @@ export default function AdminLoginPage() {
               ? 'Iniciar Sesión'
               : 'Crear Usuario Administrador'}
             <ArrowRight className="w-4 h-4" />
-          </button>
-
-          <button
-            type="button"
-            onClick={handleDemoAccess}
-            className="w-full py-2.5 rounded-xl bg-[#0e0720] hover:bg-purple-950/60 text-purple-300 font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 border border-purple-900/60 transition-all"
-          >
-            Entrar en Modo Local / Demo
           </button>
         </form>
 

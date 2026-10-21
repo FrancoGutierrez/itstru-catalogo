@@ -31,19 +31,19 @@ export default function AdminPage() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Verificación de autenticación mediante Supabase Auth
+  // Verificación estricta de autenticación mediante Supabase Auth
   useEffect(() => {
     let isMounted = true;
+
+    // Limpiar residuos de sesiones demo anteriores
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('cotiperu_admin_session');
+    }
 
     async function checkAuth() {
       try {
         if (!supabase) {
-          const localToken = typeof window !== 'undefined' ? localStorage.getItem('cotiperu_admin_session') : null;
-          if (localToken && isMounted) {
-            setIsAuthenticated(true);
-            setUserEmail('admin@demo.local');
-            loadData();
-          } else if (isMounted) {
+          if (isMounted) {
             setIsAuthenticated(false);
             router.replace('/admin/login');
           }
@@ -52,13 +52,7 @@ export default function AdminPage() {
 
         const { data: { session }, error } = await supabase.auth.getSession();
         if (error || !session) {
-          // Verificar fallback de sesión local de emergencia
-          const localToken = typeof window !== 'undefined' ? localStorage.getItem('cotiperu_admin_session') : null;
-          if (localToken && isMounted) {
-            setIsAuthenticated(true);
-            setUserEmail('admin@demo.local');
-            loadData();
-          } else if (isMounted) {
+          if (isMounted) {
             setIsAuthenticated(false);
             router.replace('/admin/login');
           }
@@ -72,12 +66,7 @@ export default function AdminPage() {
         }
       } catch (err) {
         console.warn('Error verificando sesión en Supabase Auth:', err);
-        const localToken = typeof window !== 'undefined' ? localStorage.getItem('cotiperu_admin_session') : null;
-        if (localToken && isMounted) {
-          setIsAuthenticated(true);
-          setUserEmail('admin@demo.local');
-          loadData();
-        } else if (isMounted) {
+        if (isMounted) {
           setIsAuthenticated(false);
           router.replace('/admin/login');
         }
@@ -92,11 +81,8 @@ export default function AdminPage() {
         setIsAuthenticated(true);
         setUserEmail(session.user.email || 'Admin');
       } else if (!session && isMounted) {
-        const localToken = typeof window !== 'undefined' ? localStorage.getItem('cotiperu_admin_session') : null;
-        if (!localToken) {
-          setIsAuthenticated(false);
-          router.replace('/admin/login');
-        }
+        setIsAuthenticated(false);
+        router.replace('/admin/login');
       }
     }) ?? { data: { subscription: { unsubscribe: () => {} } } };
 
