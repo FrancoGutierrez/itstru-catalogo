@@ -8,8 +8,8 @@ export async function middleware(request: NextRequest) {
     },
   });
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://pdfkxzabspzkgbqwfcic.supabase.co';
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_21OY2olbACqDAhcQtuMCiw_FTQcfXKD';
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || 'https://pdfkxzabspzkgbqwfcic.supabase.co';
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_21OY2olbACqDAhcQtuMCiw_FTQcfXKD';
 
   const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
     cookies: {
