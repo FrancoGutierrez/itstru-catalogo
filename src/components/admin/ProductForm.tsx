@@ -86,12 +86,13 @@ export function ProductForm({
     try {
       let finalImageUrl = imageUrl;
 
-      // 1. Si el usuario seleccionó un archivo local y Supabase está configurado
+      // 1. Subida de imagen al bucket 'product-images' de Supabase Storage
       if (fileToUpload) {
         try {
           finalImageUrl = await uploadProductImage(fileToUpload);
         } catch (uploadErr: unknown) {
-          console.warn('Subida a storage falló, usando preview local:', uploadErr);
+          console.error('Error al subir imagen a Supabase Storage:', uploadErr);
+          throw new Error(`Error en Storage: ${uploadErr instanceof Error ? uploadErr.message : 'No se pudo subir la imagen al bucket product-images'}`);
         }
       }
 
@@ -99,8 +100,11 @@ export function ProductForm({
       const foundCategory = categories.find((c) => c.name === category);
       const categoryId = foundCategory?.id || null;
 
+      // Si no se especificó SKU, generar uno automáticamente
+      const finalSku = sku.trim().toUpperCase() || `TRU-${Date.now().toString().slice(-6)}`;
+
       const productPayload = {
-        sku: sku.trim().toUpperCase(),
+        sku: finalSku,
         name: name.trim(),
         description: description.trim() || null,
         price: numPrice,

@@ -4,6 +4,7 @@ import React, { Suspense, useEffect, useState, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Category, Product } from '@/types';
 import { getProducts, getCategories } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabaseClient';
 import { CatalogFilters } from '@/components/catalog/CatalogFilters';
 import { ProductCard } from '@/components/catalog/ProductCard';
 import { ProductModal } from '@/components/catalog/ProductModal';
@@ -27,23 +28,42 @@ function CatalogContent() {
 
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
-  useEffect(() => {
-    async function load() {
-      setLoading(true);
-      try {
-        const [prods, cats] = await Promise.all([
-          getProducts({ onlyActive: true }),
-          getCategories(),
-        ]);
-        setProducts(prods);
-        setCategories(cats);
-      } catch (e) {
-        console.error('Error cargando catálogo:', e);
-      } finally {
-        setLoading(false);
-      }
+  const loadData = async () => {
+    try {
+      const [prods, cats] = await Promise.all([
+        getProducts({ onlyActive: true }),
+        getCategories(),
+      ]);
+      setProducts(prods);
+      setCategories(cats);
+    } catch (e) {
+      console.error('Error cargando catálogo:', e);
+    } finally {
+      setLoading(false);
     }
-    load();
+  };
+
+  useEffect(() => {
+    setLoading(true);
+    loadData();
+
+    if (!supabase) return;
+
+    // Sincronización en tiempo real desde Supabase
+    const channel = supabase
+      .channel('catalog-realtime-products')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'products' },
+        () => {
+          loadData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   // Actualizar si los query params de la URL cambian

@@ -1,23 +1,8 @@
-import { createClient } from '@supabase/supabase-js';
+import { supabase, isSupabaseConfigured } from '@/lib/supabaseClient';
 import { Product, Category, CompanySettings, Quote } from '@/types';
 import { INITIAL_PRODUCTS, INITIAL_CATEGORIES, INITIAL_COMPANY_SETTINGS } from '../constants';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-
-export const isSupabaseConfigured = (): boolean => {
-  return Boolean(
-    supabaseUrl &&
-    supabaseAnonKey &&
-    supabaseUrl.startsWith('https://') &&
-    supabaseAnonKey.length > 20
-  );
-};
-
-// Cliente de Supabase para el navegador
-export const supabase = isSupabaseConfigured()
-  ? createClient(supabaseUrl, supabaseAnonKey)
-  : null;
+export { supabase, isSupabaseConfigured };
 
 /**
  * Obtener productos (con fallback a productos iniciales si no hay conexión a Supabase)
@@ -37,12 +22,14 @@ export async function getProducts(options?: { onlyActive?: boolean }): Promise<P
     }
     const { data, error } = await query;
     if (error || !data || data.length === 0) {
-      console.warn('Usando catálogo inicial por error o tabla vacía en Supabase:', error?.message);
+      if (error) {
+        console.warn('Nota: Usando catálogo inicial debido a error o tabla vacía en Supabase:', error.message);
+      }
       return options?.onlyActive ? INITIAL_PRODUCTS.filter((p) => p.is_active) : INITIAL_PRODUCTS;
     }
     return data as Product[];
   } catch (err) {
-    console.error('Error fetching products from Supabase:', err);
+    console.warn('Error fetching products from Supabase, usando catálogo local:', err);
     return INITIAL_PRODUCTS;
   }
 }
@@ -86,7 +73,7 @@ export async function getCompanySettings(): Promise<CompanySettings> {
 }
 
 /**
- * Subir imagen al bucket 'products' de Supabase Storage
+ * Subir imagen al bucket 'product-images' de Supabase Storage
  */
 export async function uploadProductImage(file: File): Promise<string> {
   if (!supabase) {
@@ -94,22 +81,44 @@ export async function uploadProductImage(file: File): Promise<string> {
   }
 
   const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
-  const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
-  const filePath = `catalog/${fileName}`;
+  const cleanName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+  const fileName = `${Date.now()}-${cleanName}`;
+  const filePath = `products/${fileName}`;
 
+  // Intentar primero con el bucket oficial 'product-images'
+  const primaryBucket = 'product-images';
   const { error: uploadError } = await supabase.storage
-    .from('products')
+    .from(primaryBucket)
     .upload(filePath, file, {
       cacheControl: '3600',
       upsert: false,
     });
 
+  let activeBucket = primaryBucket;
+
+  // Si da error de bucket no encontrado, intentar fallback a 'products'
   if (uploadError) {
-    throw new Error(`Error al subir la imagen: ${uploadError.message}`);
+    const isBucketNotFound = uploadError.message?.toLowerCase().includes('bucket not found');
+    if (isBucketNotFound) {
+      const fallbackBucket = 'products';
+      const { error: fallbackError } = await supabase.storage
+        .from(fallbackBucket)
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false,
+        });
+
+      if (fallbackError) {
+        throw new Error(`Error al subir la imagen en '${primaryBucket}' y '${fallbackBucket}': ${fallbackError.message}`);
+      }
+      activeBucket = fallbackBucket;
+    } else {
+      throw new Error(`Error al subir la imagen a Supabase Storage (${primaryBucket}): ${uploadError.message}`);
+    }
   }
 
   const { data: publicUrlData } = supabase.storage
-    .from('products')
+    .from(activeBucket)
     .getPublicUrl(filePath);
 
   return publicUrlData.publicUrl;
@@ -120,7 +129,7 @@ export async function uploadProductImage(file: File): Promise<string> {
  */
 export async function saveQuoteToSupabase(quote: Quote): Promise<{ success: boolean; error?: string }> {
   if (!supabase) {
-    return { success: true }; // En modo local simula éxito
+    return { success: true };
   }
 
   try {

@@ -1,19 +1,77 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Product } from '@/types';
 import { ProductCard } from '@/components/catalog/ProductCard';
 import { ProductModal } from '@/components/catalog/ProductModal';
-import { ArrowRight, Sparkles, Tag, Layers } from 'lucide-react';
+import { ArrowRight, Sparkles, Tag, Layers, Radio } from 'lucide-react';
+import { supabase } from '@/lib/supabaseClient';
+import { getProducts } from '@/lib/supabase/client';
 
 interface FeaturedGridProps {
   products: Product[];
 }
 
-export function FeaturedGrid({ products }: FeaturedGridProps) {
+export function FeaturedGrid({ products: initialProducts }: FeaturedGridProps) {
+  const [products, setProducts] = useState<Product[]>(initialProducts);
   const [filter, setFilter] = useState<'all' | 'offers' | 'new'>('all');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [isRealtimeActive, setIsRealtimeActive] = useState(false);
+
+  // Sincronización en tiempo real con Supabase
+  useEffect(() => {
+    let isMounted = true;
+
+    async function fetchLive() {
+      try {
+        const liveProducts = await getProducts({ onlyActive: true });
+        if (isMounted && liveProducts.length > 0) {
+          setProducts(liveProducts);
+        }
+      } catch (err) {
+        console.warn('Error al cargar productos iniciales en vivo:', err);
+      }
+    }
+
+    fetchLive();
+
+    if (!supabase) return;
+
+    // Escuchar inserciones, actualizaciones de precio y eliminaciones en tiempo real
+    const channel = supabase
+      .channel('home-realtime-products')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'products' },
+        async () => {
+          try {
+            const updated = await getProducts({ onlyActive: true });
+            if (isMounted) {
+              setProducts(updated);
+            }
+          } catch (e) {
+            console.error('Error sincronizando productos en tiempo real:', e);
+          }
+        }
+      )
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED' && isMounted) {
+          setIsRealtimeActive(true);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (initialProducts && initialProducts.length > 0) {
+      setProducts(initialProducts);
+    }
+  }, [initialProducts]);
 
   const filteredProducts = products.filter((p) => {
     if (!p.is_active) return false;
@@ -29,7 +87,13 @@ export function FeaturedGrid({ products }: FeaturedGridProps) {
         <div>
           <div className="flex items-center gap-2 text-purple-400 font-extrabold text-xs uppercase tracking-widest mb-1">
             <Sparkles className="w-4 h-4 text-purple-400" />
-            Lo Más Buscado
+            <span>Lo Más Buscado</span>
+            {isRealtimeActive && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 ml-2 animate-pulse">
+                <Radio className="w-2.5 h-2.5" />
+                Tiempo Real Supabase
+              </span>
+            )}
           </div>
           <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
             Novedades & Ofertas Destacadas
@@ -98,18 +162,20 @@ export function FeaturedGrid({ products }: FeaturedGridProps) {
       <div className="text-center pt-4">
         <Link
           href="/catalogo"
-          className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-[#140b2a] hover:bg-gradient-to-r hover:from-purple-600 hover:to-indigo-600 text-purple-200 hover:text-white font-black text-xs uppercase tracking-wider transition-all border border-purple-800/60 hover:border-purple-500 shadow-lg shadow-purple-950/40 group"
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-black text-xs uppercase tracking-wider hover:from-purple-500 hover:to-indigo-500 shadow-xl shadow-purple-600/30 hover:scale-[1.02] active:scale-[0.98] transition-all group"
         >
-          Explorar todo el catálogo ({products.length} productos)
-          <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform text-purple-400 group-hover:text-white" />
+          <span>Ver Todo el Catálogo Oficial ({products.length} productos)</span>
+          <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
         </Link>
       </div>
 
-      {/* Modal de Detalle / Vista Rápida */}
-      <ProductModal
-        product={selectedProduct}
-        onClose={() => setSelectedProduct(null)}
-      />
+      {/* Modal de Vista Rápida de Producto */}
+      {selectedProduct && (
+        <ProductModal
+          product={selectedProduct}
+          onClose={() => setSelectedProduct(null)}
+        />
+      )}
     </section>
   );
 }
